@@ -8,18 +8,54 @@ output:
 
 ## Loading and preprocessing the data
 
-
+df_activity <- read.csv("activity.csv", header=TRUE, sep=",")
 
 ## What is mean total number of steps taken per day?
 
+df_steps <- df_activity %>% 
+        group_by(date) %>% 
+        summarize(steps= sum(steps, na.rm = TRUE))
 
+hist(df_steps$steps, breaks=8,main = "Total number of steps per day", xlab = "Steps", col = "orange")
+
+mean(df_steps$steps)
+
+median(df_steps$steps)
 
 ## What is the average daily activity pattern?
 
+df_ave <- df_activity %>% 
+        group_by(interval) %>% 
+        summarize(steps= mean(steps, na.rm = TRUE ))
 
+plot(df_ave$interval,df_ave$steps, 
+     type="l", col="red",main="Time series plot of the 5-minute interval \n and the average number of steps taken", 
+     xlab = "The 5-minute interval", ylab = "The average number of steps taken")
+     
+     df_ave[which.max(df_ave$steps), ]$interval
 
 ## Imputing missing values
 
+df_activity2 <- df_activity
+for (i in 1:nrow(df_activity2))
+{
+        if (is.na(df_activity2$steps[i])){
+                df_activity2$steps[i]<-df_ave[which(df_activity2$interval[i] == df_ave$interval),]$steps
+        }
+}
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+df_activity3 <- df_activity2 %>%
+        mutate(day = factor(if_else(weekdays(date) %in% c("lördag", "söndag"),
+                             "Weekend",
+                             "Weekday"))) %>% 
+        group_by(interval, day) %>% 
+        summarise(steps_mean = mean(steps))
+
+
+ggplot(df_activity3, aes(interval, steps_mean)) + 
+        geom_line(color="blue", size=1) + facet_wrap(~day, nrow=2, ncol=1) +
+        labs(x="Interval", y="Avg. steps") 
+
