@@ -44,7 +44,6 @@ for (i in 1:nrow(df_activity2))
         }
 }
 
-
 ## Are there differences in activity patterns between weekdays and weekends?
 
 df_activity3 <- df_activity2 %>%
